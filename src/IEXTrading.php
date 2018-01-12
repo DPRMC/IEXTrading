@@ -73,7 +73,7 @@ class IEXTrading {
                 $response = IEXTrading::makeRequest( 'GET', $uri );
                 break;
             default:
-                throw new InvalidStockChartOption( "You passed in [" . $option . "] as an option. Valid values are 5y, 2y, 1y, ytd, 6m, 3m, 1m, 1d, date, and dynamic." );
+                throw new InvalidStockChartOption( "When calling stockChart() you passed in [" . $option . "] as an option. Valid values are 5y, 2y, 1y, ytd, 6m, 3m, 1m, 1d, date, and dynamic." );
 
         endswitch;
 

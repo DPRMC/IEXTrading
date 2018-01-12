@@ -36,8 +36,8 @@ class IEXTradingTest extends TestCase {
         /**
          * @var \DPRMC\IEXTrading\Responses\StockChart $stockChart
          */
-        $stockChart = IEXTrading::stockChart( 'aapl', \DPRMC\IEXTrading\Responses\StockChart::OPTION_DYNAMIC );
-        //print_r($stockChart);
+        $stockChart = IEXTrading::stockChart( 'aapl', \DPRMC\IEXTrading\Responses\StockChart::OPTION_1M );
+        print_r( $stockChart );
 
     }
 

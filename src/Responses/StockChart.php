@@ -20,6 +20,7 @@ class StockChart extends IEXTradingResponse {
 
     public $option;
     public $date;
+    public $range;
 
     /**
      * @var \Illuminate\Support\Collection
@@ -54,20 +55,24 @@ class StockChart extends IEXTradingResponse {
                     print_r( $dataPoint );
                     $this->data->push( new StockChartDay( $dataPoint ) );
                 endforeach;
-
                 break;
 
             case StockChart::OPTION_1D:
             case StockChart::OPTION_DATE:
                 foreach ( $a as $dataPoint ):
-
+                    print_r( $dataPoint );
                     $this->data->push( new StockChartIntraDay( $dataPoint ) );
                 endforeach;
                 break;
 
             case StockChart::OPTION_DYNAMIC:
-                var_dump( array_keys( $a ) );
-            //var_dump(array_shift($a));
+                $this->range = $a[ 'range' ];
+                print_r( $a[ 'data' ] );
+                foreach ( $a[ 'data' ] as $dataPoint ):
+                    print_r( $dataPoint );
+                    $this->data->push( new StockChartIntraDay( $dataPoint ) );
+                endforeach;
+                break;
 
 
             default:
