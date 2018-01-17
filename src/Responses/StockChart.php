@@ -2,6 +2,7 @@
 
 namespace DPRMC\IEXTrading\Responses;
 
+use DPRMC\IEXTrading\Exceptions\InvalidRangeReturnedInDynamicChart;
 use DPRMC\IEXTrading\Exceptions\InvalidStockChartOption;
 use Illuminate\Support\Collection;
 
@@ -35,6 +36,7 @@ class StockChart extends IEXTradingResponse {
      * @param      $option
      * @param null $date
      *
+     * @throws \DPRMC\IEXTrading\Exceptions\InvalidRangeReturnedInDynamicChart
      * @throws \DPRMC\IEXTrading\Exceptions\InvalidStockChartOption
      */
     public function __construct( $response, $option, $date = null ) {
@@ -52,7 +54,6 @@ class StockChart extends IEXTradingResponse {
             case StockChart::OPTION_3M:
             case StockChart::OPTION_1M:
                 foreach ( $a as $dataPoint ):
-                    print_r( $dataPoint );
                     $this->data->push( new StockChartDay( $dataPoint ) );
                 endforeach;
                 break;
@@ -60,20 +61,27 @@ class StockChart extends IEXTradingResponse {
             case StockChart::OPTION_1D:
             case StockChart::OPTION_DATE:
                 foreach ( $a as $dataPoint ):
-                    print_r( $dataPoint );
                     $this->data->push( new StockChartIntraDay( $dataPoint ) );
                 endforeach;
                 break;
 
             case StockChart::OPTION_DYNAMIC:
                 $this->range = $a[ 'range' ];
-                print_r( $a[ 'data' ] );
+                switch ( $this->range ):
+                    case '1d':
+                        $stockChartObjectName = StockChartDay::class;
+                        break;
+                    case 'today':
+                    case '1m':
+                        $stockChartObjectName = StockChartIntraDay::class;
+                        break;
+                    default:
+                        throw new InvalidRangeReturnedInDynamicChart( "The IEX system returned a range of [" . $this->range . "] which isn't handled by this library yet. Contact the dev." );
+                endswitch;
                 foreach ( $a[ 'data' ] as $dataPoint ):
-                    print_r( $dataPoint );
-                    $this->data->push( new StockChartIntraDay( $dataPoint ) );
+                    $this->data->push( new $stockChartObjectName( $dataPoint ) );
                 endforeach;
                 break;
-
 
             default:
                 throw new InvalidStockChartOption( "You passed in [" . $option . "] as an option. Valid values are 5y, 2y, 1y, ytd, 6m, 3m, 1m, 1d, date, and dynamic." );

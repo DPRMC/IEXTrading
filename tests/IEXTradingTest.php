@@ -32,13 +32,35 @@ class IEXTradingTest extends TestCase {
      * @throws \Exception
      * @group chart
      */
-    public function testStockChart() {
+    public function testStockChartDynamic() {
+        /**
+         * @var \DPRMC\IEXTrading\Responses\StockChart $stockChart
+         */
+        $stockChart = IEXTrading::stockChart( 'aapl', \DPRMC\IEXTrading\Responses\StockChart::OPTION_DYNAMIC );
+        $this->assertInstanceOf( \DPRMC\IEXTrading\Responses\StockChart::class, $stockChart );
+    }
+
+    public function testStockChartDate() {
+        /**
+         * @var \DPRMC\IEXTrading\Responses\StockChart $stockChart
+         */
+        $stockChart = IEXTrading::stockChart( 'aapl', \DPRMC\IEXTrading\Responses\StockChart::OPTION_DATE, '20180103' );
+        $this->assertInstanceOf( \DPRMC\IEXTrading\Responses\StockChart::class, $stockChart );
+    }
+
+    public function testStockChartOneMonth() {
         /**
          * @var \DPRMC\IEXTrading\Responses\StockChart $stockChart
          */
         $stockChart = IEXTrading::stockChart( 'aapl', \DPRMC\IEXTrading\Responses\StockChart::OPTION_1M );
-        print_r( $stockChart );
-
+        $this->assertInstanceOf( \DPRMC\IEXTrading\Responses\StockChart::class, $stockChart );
     }
+
+    public function testStockChartWithInvalidOptionShouldThrowException() {
+        $this->expectException( Exception::class );
+        IEXTrading::stockChart( 'aapl', 'notValidOption' );
+    }
+
+
 
 }
