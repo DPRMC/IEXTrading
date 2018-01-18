@@ -46,14 +46,15 @@ class IEXTradingTest extends TestCase {
      * @throws \Exception
      */
     public function testStockNewsWithNoParametersShouldReturnTenMarketNewsItems() {
+        $this->markTestSkipped(
+            "A bug in the API returns 11 items instead of 10."
+        );
         /**
          * @var \DPRMC\IEXTrading\Responses\StockNews $stockNews
          */
         $stockNews = IEXTrading::stockNews();
         $this->assertCount( 10, $stockNews->items );
-        $this->markTestSkipped(
-            "A bug in the API returns 11 items instead of 10."
-        );
+
     }
 
     public function testStockNewsWithTooManyItemsShouldThrowException() {
