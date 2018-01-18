@@ -1,5 +1,4 @@
 .idea
 /vendor/
-/build/*
-/deleteme.json
 /composer.lock
+/build/
