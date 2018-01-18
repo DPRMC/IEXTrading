@@ -26,6 +26,38 @@ class IEXTradingTest extends TestCase {
         $this->assertEquals( 'Apple Inc.', $stockQuote->companyName );
     }
 
+    public function testStockCompany() {
+        /**
+         * @var \DPRMC\IEXTrading\Responses\StockCompany $stockCompany
+         */
+        $stockCompany = IEXTrading::stockCompany( 'aapl' );
+        $this->assertEquals( 'http://www.apple.com', $stockCompany->website );
+    }
+
+    public function testStockPeers() {
+        /**
+         * @var \DPRMC\IEXTrading\Responses\StockPeers $stockPeers
+         */
+        $stockPeers = IEXTrading::stockPeers( 'aapl' );
+        $this->assertTrue( in_array( 'MSFT', $stockPeers->symbols ) );
+    }
+
+    public function testStockRelevant() {
+        /**
+         * @var \DPRMC\IEXTrading\Responses\StockRelevant $stockRelevant
+         */
+        $stockRelevant = IEXTrading::stockRelevant( 'aapl' );
+        $this->assertTrue( in_array( 'MSFT', $stockRelevant->symbols ) );
+        $this->assertTrue( $stockRelevant->peers );
+    }
+
+    public function testStockNews() {
+        /**
+         * @var \DPRMC\IEXTrading\Responses\StockNews $stockNews
+         */
+        $stockNews = IEXTrading::stockNews( 'aapl', 50 );
+        print_r( $stockNews );
+    }
 
     /**
      * @throws \DPRMC\IEXTrading\Exceptions\InvalidStockChartOption
@@ -60,7 +92,6 @@ class IEXTradingTest extends TestCase {
         $this->expectException( Exception::class );
         IEXTrading::stockChart( 'aapl', 'notValidOption' );
     }
-
 
 
 }

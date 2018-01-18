@@ -2,10 +2,15 @@
 
 namespace DPRMC\IEXTrading;
 
+use DPRMC\IEXTrading\Exceptions\DatePassedToStockNewsOutOfRange;
 use DPRMC\IEXTrading\Exceptions\InvalidStockChartOption;
 use DPRMC\IEXTrading\Exceptions\UnknownSymbol;
 use DPRMC\IEXTrading\Responses\StockChart;
+use DPRMC\IEXTrading\Responses\StockCompany;
+use DPRMC\IEXTrading\Responses\StockNews;
+use DPRMC\IEXTrading\Responses\StockPeers;
 use DPRMC\IEXTrading\Responses\StockQuote;
+use DPRMC\IEXTrading\Responses\StockRelevant;
 use DPRMC\IEXTrading\Responses\StockStats;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
@@ -21,7 +26,6 @@ class IEXTrading {
      * @throws \DPRMC\IEXTrading\Exceptions\UnknownSymbol
      * @throws \Exception
      */
-
     public static function stockStats( $ticker ) {
         $uri      = 'stock/' . $ticker . '/stats';
         $response = IEXTrading::makeRequest( 'GET', $uri );
@@ -43,6 +47,50 @@ class IEXTrading {
         return new StockQuote( $response );
     }
 
+    public static function stockCompany( $ticker ) {
+        $uri      = 'stock/' . $ticker . '/company';
+        $response = IEXTrading::makeRequest( 'GET', $uri );
+
+        return new StockCompany( $response );
+    }
+
+    public static function stockPeers( $ticker ) {
+        $uri      = 'stock/' . $ticker . '/peers';
+        $response = IEXTrading::makeRequest( 'GET', $uri );
+
+        return new StockPeers( $response );
+    }
+
+    public static function stockRelevant( $ticker ) {
+        $uri      = 'stock/' . $ticker . '/relevant';
+        $response = IEXTrading::makeRequest( 'GET', $uri );
+
+        return new StockRelevant( $response );
+    }
+
+    /**
+     * @param string $ticker Use market to get market-wide news
+     * @param null   $days   Number between 1 and 50. Default is 10
+     *
+     * @return \DPRMC\IEXTrading\Responses\StockNews
+     * @throws \DPRMC\IEXTrading\Exceptions\DatePassedToStockNewsOutOfRange
+     * @throws \DPRMC\IEXTrading\Exceptions\UnknownSymbol
+     * @throws \Exception
+     */
+    public static function stockNews( $ticker = 'market', $days = null ) {
+        if ( $days && ( $days < 1 || $days > 50 ) ):
+            throw new DatePassedToStockNewsOutOfRange( "If you pass in a date it needs to be a number between 1 and 50. You passed in " . $days );
+        endif;
+
+        if ( $days ):
+            $uri = 'stock/' . $ticker . '/news/last/' . $days;
+        else:
+            $uri = 'stock/' . $ticker . '/news';
+        endif;
+        $response = IEXTrading::makeRequest( 'GET', $uri );
+
+        return new StockNews( $response );
+    }
 
     /**
      * @param      string $ticker A valid stock ticker Ex: AAPL for Apple
