@@ -2,13 +2,16 @@
 
 namespace DPRMC\IEXTrading;
 
-use DPRMC\IEXTrading\Exceptions\DatePassedToStockNewsOutOfRange;
 use DPRMC\IEXTrading\Exceptions\InvalidStockChartOption;
+use DPRMC\IEXTrading\Exceptions\ItemCountPassedToStockNewsOutOfRange;
 use DPRMC\IEXTrading\Exceptions\UnknownSymbol;
 use DPRMC\IEXTrading\Responses\StockChart;
 use DPRMC\IEXTrading\Responses\StockCompany;
+use DPRMC\IEXTrading\Responses\StockFinancials;
+use DPRMC\IEXTrading\Responses\StockLogo;
 use DPRMC\IEXTrading\Responses\StockNews;
 use DPRMC\IEXTrading\Responses\StockPeers;
+use DPRMC\IEXTrading\Responses\StockPrice;
 use DPRMC\IEXTrading\Responses\StockQuote;
 use DPRMC\IEXTrading\Responses\StockRelevant;
 use DPRMC\IEXTrading\Responses\StockStats;
@@ -18,6 +21,30 @@ use GuzzleHttp\Exception\ClientException;
 class IEXTrading {
 
     const URL = 'https://api.iextrading.com/1.0/';
+
+    /**
+     * @param string $ticker Use market to get market-wide news
+     * @param null   $items  How many news items do you want? Number between 1 and 50. Default is 10
+     *
+     * @return \DPRMC\IEXTrading\Responses\StockNews
+     * @throws \DPRMC\IEXTrading\Exceptions\ItemCountPassedToStockNewsOutOfRange
+     * @throws \DPRMC\IEXTrading\Exceptions\UnknownSymbol
+     * @throws \Exception
+     */
+    public static function stockNews( $ticker = 'market', $items = null ) {
+        if ( isset( $items ) && ( $items < 1 || $items > 50 ) ):
+            throw new ItemCountPassedToStockNewsOutOfRange( "If you pass in a date it needs to be a number between 1 and 50. You passed in " . $items );
+        endif;
+
+        if ( isset( $items ) ):
+            $uri = 'stock/' . $ticker . '/news/last/' . $items;
+        else:
+            $uri = 'stock/' . $ticker . '/news';
+        endif;
+        $response = IEXTrading::makeRequest( 'GET', $uri );
+
+        return new StockNews( $response );
+    }
 
     /**
      * @param $ticker
@@ -68,29 +95,7 @@ class IEXTrading {
         return new StockRelevant( $response );
     }
 
-    /**
-     * @param string $ticker Use market to get market-wide news
-     * @param null   $days   Number between 1 and 50. Default is 10
-     *
-     * @return \DPRMC\IEXTrading\Responses\StockNews
-     * @throws \DPRMC\IEXTrading\Exceptions\DatePassedToStockNewsOutOfRange
-     * @throws \DPRMC\IEXTrading\Exceptions\UnknownSymbol
-     * @throws \Exception
-     */
-    public static function stockNews( $ticker = 'market', $days = null ) {
-        if ( $days && ( $days < 1 || $days > 50 ) ):
-            throw new DatePassedToStockNewsOutOfRange( "If you pass in a date it needs to be a number between 1 and 50. You passed in " . $days );
-        endif;
 
-        if ( $days ):
-            $uri = 'stock/' . $ticker . '/news/last/' . $days;
-        else:
-            $uri = 'stock/' . $ticker . '/news';
-        endif;
-        $response = IEXTrading::makeRequest( 'GET', $uri );
-
-        return new StockNews( $response );
-    }
 
     /**
      * @param      string $ticker A valid stock ticker Ex: AAPL for Apple
@@ -126,6 +131,29 @@ class IEXTrading {
         endswitch;
 
         return new StockChart( $response, $option, $date );
+    }
+
+    public static function stockFinancials( $ticker ) {
+        $uri      = 'stock/' . $ticker . '/financials';
+        $response = IEXTrading::makeRequest( 'GET', $uri );
+
+        return new StockFinancials( $response );
+    }
+
+    public static function stockLogo( $ticker ) {
+        $uri      = 'stock/' . $ticker . '/logo';
+        $response = IEXTrading::makeRequest( 'GET', $uri );
+
+        return new StockLogo( $response );
+    }
+
+    public static function stockPrice( $ticker ) {
+        $uri        = 'stock/' . $ticker . '/price';
+        $response   = IEXTrading::makeRequest( 'GET', $uri );
+        $jsonString = (string)$response->getBody();
+        $price      = \GuzzleHttp\json_decode( $jsonString, true );
+
+        return (float)$price;
     }
 
 

@@ -5,6 +5,70 @@ use PHPUnit\Framework\TestCase;
 
 class IEXTradingTest extends TestCase {
 
+    public function testStockPrice() {
+        $price = IEXTrading::stockPrice( 'aapl' );
+        $this->assertTrue( is_float( $price ) );
+    }
+
+    public function testStockFinancials() {
+        /**
+         * @var \DPRMC\IEXTrading\Responses\StockFinancials $stockFinancials
+         */
+        $stockFinancials = IEXTrading::stockFinancials( 'aapl' );
+        $this->assertEquals( 'AAPL', $stockFinancials->symbol );
+    }
+
+    public function testStockLogo() {
+        /**
+         * @var \DPRMC\IEXTrading\Responses\StockLogo $stockLogo
+         */
+        $stockLogo = IEXTrading::stockLogo( 'aapl' );
+        $this->assertEquals( 'https://storage.googleapis.com/iex/api/logos/AAPL.png', $stockLogo->url );
+    }
+
+    /**
+     * @throws \DPRMC\IEXTrading\Exceptions\ItemCountPassedToStockNewsOutOfRange
+     * @throws \DPRMC\IEXTrading\Exceptions\UnknownSymbol
+     * @throws \Exception
+     */
+    public function testStockNews() {
+        /**
+         * @var \DPRMC\IEXTrading\Responses\StockNews $stockNews
+         */
+        $stockNews = IEXTrading::stockNews( 'aapl', 50 );
+        $this->assertCount( 50, $stockNews->items );
+    }
+
+    /**
+     * https://github.com/iexg/IEX-API/issues/185
+     * @throws \DPRMC\IEXTrading\Exceptions\ItemCountPassedToStockNewsOutOfRange
+     * @throws \DPRMC\IEXTrading\Exceptions\UnknownSymbol
+     * @throws \Exception
+     */
+    public function testStockNewsWithNoParametersShouldReturnTenMarketNewsItems() {
+        /**
+         * @var \DPRMC\IEXTrading\Responses\StockNews $stockNews
+         */
+        $stockNews = IEXTrading::stockNews();
+        $this->assertCount( 10, $stockNews->items );
+    }
+
+    public function testStockNewsWithTooManyItemsShouldThrowException() {
+        $this->expectException( \DPRMC\IEXTrading\Exceptions\ItemCountPassedToStockNewsOutOfRange::class );
+        /**
+         * @var \DPRMC\IEXTrading\Responses\StockNews $stockNews
+         */
+        IEXTrading::stockNews( 'aapl', 51 );
+    }
+
+    public function testStockNewsWithTooFewItemsShouldThrowException() {
+        $this->expectException( \DPRMC\IEXTrading\Exceptions\ItemCountPassedToStockNewsOutOfRange::class );
+        /**
+         * @var \DPRMC\IEXTrading\Responses\StockNews $stockNews
+         */
+        IEXTrading::stockNews( 'aapl', -1 );
+    }
+
     public function testStockStatsWithInvalidTicker() {
         $this->expectException( \DPRMC\IEXTrading\Exceptions\UnknownSymbol::class );
         IEXTrading::stockStats( 'thisisafaketicker' );
@@ -51,13 +115,6 @@ class IEXTradingTest extends TestCase {
         $this->assertTrue( $stockRelevant->peers );
     }
 
-    public function testStockNews() {
-        /**
-         * @var \DPRMC\IEXTrading\Responses\StockNews $stockNews
-         */
-        $stockNews = IEXTrading::stockNews( 'aapl', 50 );
-        print_r( $stockNews );
-    }
 
     /**
      * @throws \DPRMC\IEXTrading\Exceptions\InvalidStockChartOption
