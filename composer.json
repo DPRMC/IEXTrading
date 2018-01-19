@@ -3,7 +3,7 @@
   "description": "A PHP library to access the IEX trading API.",
   "type": "library",
   "require": {
-    "illuminate/support": "5.4.36",
+    "illuminate/support": "4.2.22",
     "nesbot/carbon": "^1.22",
     "guzzlehttp/guzzle": "^6.3"
   },
